@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Siswa</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        .low-score {
+            color: red; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Tabel Data Siswa</h1>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>nrp</th>
+                    <th>student</th>
+                    <th>subject</th>
+                    <th>test</th>
+                    <th>test score</th>
+                    <th>final score</th>
+                    <th>median</th> 
+                </tr>
+            </thead>
+            <tbody id="data-siswa">
+                
+            </tbody>
+        </table>
+    </div>
+
+   
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const data = [
+            ["123", "Hula", "Math", "UTS", 8],
+            ["123", "Hula", "Math", "UAS", 7],
+            ["123", "Hula", "History", "UTS", 6],
+            ["123", "Hula", "History", "UAS", 5],
+            ["123", "Hula", "History", "Project", 4],
+            ["456", "Bobo", "Math", "UTS", 10],
+            ["456", "Bobo", "Math", "UAS", null],
+            ["456", "Bobo", "History", "UTS", 6],
+            ["456", "Bobo", "History", "UAS", 5],
+            ["456", "Bobo", "History", "Project", null],
+            ["789", "Luna", "Math", "UTS", 10],
+            ["789", "Luna", "Math", "UAS", null],
+            ["789", "Luna", "History", "UTS", 6],
+            ["789", "Luna", "History", "UAS", 5],
+            ["789", "Luna", "History", "Project", null]
+        ];
+
+        const tbody = document.getElementById('data-siswa');
+        let idSekarang = null;
+        let namaSekarang = null;
+        let mataPelajaran = {};
+        let semuaNilai = [];
+
+        // Fungsi untuk menghitung median
+        function hitungMedian(nilai) {
+            if (nilai.length === 0) return '-';
+            nilai.sort((a, b) => a - b);
+            const tengah = Math.floor(nilai.length / 2);
+            if (nilai.length % 2 === 0) {
+                return ((nilai[tengah - 1] + nilai[tengah]) / 2).toFixed(2);
+            } else {
+                return nilai[tengah].toFixed(2);
+            }
+        }
+
+        // Fungsi untuk menghapus trailing zero
+        function hapusNolDiBelakang(nilai) {
+            return nilai % 1 === 0 ? parseInt(nilai) : nilai;
+        }
+
+        // Fungsi untuk membuat elemen nilai
+        function buatElemenNilai(nilai, rataRata) {
+            const tdNilai = document.createElement('td');
+            if (nilai !== null) {
+                tdNilai.textContent = hapusNolDiBelakang(nilai);
+
+                // Warnai nilai dengan font merah jika di bawah rata-rata
+                if (nilai < rataRata) {
+                    tdNilai.classList.add('nilai-rendah');
+                }
+            } else {
+                tdNilai.textContent = '-';
+            }
+            return tdNilai;
+        }
+
+        for (let index = 0; index < data.length; index++) {
+            const baris = data[index];
+
+            // Jika ID siswa berubah
+            if (baris[0] !== idSekarang) {
+                // Jika sudah ada data siswa sebelumnya, tampilkan data tersebut
+                if (idSekarang !== null) {
+                    Object.keys(mataPelajaran).forEach(mata => {
+                        mataPelajaran[mata].forEach(entri => {
+                            const tr = document.createElement('tr');
+                            const tdId = document.createElement('td');
+                            const tdNama = document.createElement('td');
+                            const tdMataPelajaran = document.createElement('td');
+                            const tdJenisUjian = document.createElement('td');
+                            const tdNilai = buatElemenNilai(entri[4], mataPelajaran[mata].rataRata);
+                            const tdNilaiAkhir = document.createElement('td');
+                            const tdMedian = document.createElement('td');
+
+                            tdId.textContent = idSekarang;
+                            tdNama.textContent = namaSekarang;
+                            tdMataPelajaran.textContent = mata;
+                            tdJenisUjian.textContent = entri[3];
+
+                            const nilai = mataPelajaran[mata].map(entri => entri[4]).filter(nilai => nilai !== null);
+                            const nilaiRataRata = nilai.length > 0 ? hapusNolDiBelakang(parseFloat((nilai.reduce((jumlah, nilai) => jumlah + nilai, 0) / nilai.length).toFixed(1))) : '-';
+                            tdNilaiAkhir.textContent = nilaiRataRata;
+
+                            const nilaiMedian = hapusNolDiBelakang(hitungMedian(semuaNilai));
+                            tdMedian.textContent = nilaiMedian;
+
+                            tr.appendChild(tdId);
+                            tr.appendChild(tdNama);
+                            tr.appendChild(tdMataPelajaran);
+                            tr.appendChild(tdJenisUjian);
+                            tr.appendChild(tdNilai);
+                            tr.appendChild(tdNilaiAkhir);
+                            tr.appendChild(tdMedian);
+                            tbody.appendChild(tr);
+                        });
+                    });
+                }
+
+                // Perbarui ID dan nama siswa saat ini
+                idSekarang = baris[0];
+                namaSekarang = baris[1];
+                mataPelajaran = {};
+                semuaNilai = [];
+            }
+
+            // Tambahkan mata pelajaran jika belum ada
+            if (!(baris[2] in mataPelajaran)) {
+                mataPelajaran[baris[2]] = [];
+            }
+            mataPelajaran[baris[2]].push(baris);
+
+            // Kumpulkan semua nilai ujian
+            if (baris[4] !== null) {
+                semuaNilai.push(baris[4]);
+            }
+        }
+
+        // Tampilkan data siswa terakhir
+        if (idSekarang !== null) {
+            Object.keys(mataPelajaran).forEach(mata => {
+                mataPelajaran[mata].forEach(entri => {
+                    const tr = document.createElement('tr');
+                    const tdId = document.createElement('td');
+                    const tdNama = document.createElement('td');
+                    const tdMataPelajaran = document.createElement('td');
+                    const tdJenisUjian = document.createElement('td');
+                    const tdNilai = buatElemenNilai(entri[4], mataPelajaran[mata].rataRata);
+                    const tdNilaiAkhir = document.createElement('td');
+                    const tdMedian = document.createElement('td');
+
+                    tdId.textContent = idSekarang;
+                    tdNama.textContent = namaSekarang;
+                    tdMataPelajaran.textContent = mata;
+                    tdJenisUjian.textContent = entri[3];
+
+                    const nilai = mataPelajaran[mata].map(entri => entri[4]).filter(nilai => nilai !== null);
+                    const nilaiRataRata = nilai.length > 0 ? hapusNolDiBelakang((nilai.reduce((jumlah, nilai) => jumlah + nilai, 0) / nilai.length).toFixed(2)) : '-';
+                    tdNilaiAkhir.textContent = nilaiRataRata;
+
+                    const nilaiMedian = hapusNolDiBelakang(hitungMedian(semuaNilai));
+                    tdMedian.textContent = nilaiMedian;
+
+                    tr.appendChild(tdId);
+                    tr.appendChild(tdNama);
+                    tr.appendChild(tdMataPelajaran);
+                    tr.appendChild(tdJenisUjian);
+                    tr.appendChild(tdNilai);
+                    tr.appendChild(tdNilaiAkhir);
+                    tr.appendChild(tdMedian);
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+    });
+</script>
+
+
+   
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
