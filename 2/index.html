@@ -60,7 +60,7 @@
         let mataPelajaran = {};
         let semuaNilai = [];
 
-        // Fungsi untuk menghitung median
+       
         function hitungMedian(nilai) {
             if (nilai.length === 0) return '-';
             nilai.sort((a, b) => a - b);
@@ -72,18 +72,18 @@
             }
         }
 
-        // Fungsi untuk menghapus trailing zero
+       
         function hapusNolDiBelakang(nilai) {
             return nilai % 1 === 0 ? parseInt(nilai) : nilai;
         }
 
-        // Fungsi untuk membuat elemen nilai
+        
         function buatElemenNilai(nilai, rataRata) {
             const tdNilai = document.createElement('td');
             if (nilai !== null) {
                 tdNilai.textContent = hapusNolDiBelakang(nilai);
 
-                // Warnai nilai dengan font merah jika di bawah rata-rata
+               
                 if (nilai < rataRata) {
                     tdNilai.classList.add('nilai-rendah');
                 }
@@ -96,9 +96,9 @@
         for (let index = 0; index < data.length; index++) {
             const baris = data[index];
 
-            // Jika ID siswa berubah
+            
             if (baris[0] !== idSekarang) {
-                // Jika sudah ada data siswa sebelumnya, tampilkan data tersebut
+               
                 if (idSekarang !== null) {
                     Object.keys(mataPelajaran).forEach(mata => {
                         mataPelajaran[mata].forEach(entri => {
@@ -135,20 +135,20 @@
                     });
                 }
 
-                // Perbarui ID dan nama siswa saat ini
+              
                 idSekarang = baris[0];
                 namaSekarang = baris[1];
                 mataPelajaran = {};
                 semuaNilai = [];
             }
 
-            // Tambahkan mata pelajaran jika belum ada
+           
             if (!(baris[2] in mataPelajaran)) {
                 mataPelajaran[baris[2]] = [];
             }
             mataPelajaran[baris[2]].push(baris);
 
-            // Kumpulkan semua nilai ujian
+           
             if (baris[4] !== null) {
                 semuaNilai.push(baris[4]);
             }
